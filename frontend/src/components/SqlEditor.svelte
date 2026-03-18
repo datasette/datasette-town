@@ -35,6 +35,13 @@
           return true;
         },
       },
+      {
+        key: "Shift-Enter",
+        run: () => {
+          onexecute?.();
+          return true;
+        },
+      },
     ]);
 
     view = new EditorView({

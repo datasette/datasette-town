@@ -12,6 +12,7 @@ class QuerySummary(BaseModel):
     created_at: str
     updated_at: str
     can_edit: bool = False
+    actor_profile_picture_url: str | None = None
 
 
 class ShareInfo(BaseModel):
@@ -57,6 +58,13 @@ class UpdateQueryRequest(BaseModel):
     description: str = ""
     sql: str = ""
     is_public: bool = False
+
+
+class PatchQueryRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    sql: str | None = None
+    is_public: bool | None = None
 
 
 class AddShareRequest(BaseModel):

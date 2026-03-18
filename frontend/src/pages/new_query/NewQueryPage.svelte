@@ -1,6 +1,7 @@
 <script lang="ts">
   import { loadPageData } from "../../page_data/load";
   import { appState } from "../../store.svelte";
+  import { client } from "../../api";
   import SqlEditor from "../../components/SqlEditor.svelte";
   import QueryResults from "../../components/QueryResults.svelte";
   import type { NewQueryPageData } from "../../page_data/NewQueryPageData.types";
@@ -21,27 +22,21 @@
   let previewError: string | null = $state(null);
   let previewLoading = $state(false);
   let previewTruncated = $state(false);
-  let savedQueryId: string | null = $state(null);
 
   async function handleSave() {
     saving = true;
     error = null;
     try {
-      const res = await fetch(`/${db}/-/api/town/queries/new`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          sql: sqlValue,
-          is_public: isPublic,
-        }),
+      const { data } = await client.POST("/{database}/-/api/town/queries/new", {
+        params: { path: { database: db } },
+        body: { title, description, sql: sqlValue, is_public: isPublic },
+        parseAs: "json",
       });
-      const data = await res.json();
-      if (data.ok) {
-        window.location.href = `/${db}/-/town/q/${data.id}`;
+      const d = data as any;
+      if (d?.ok) {
+        window.location.href = `/${db}/-/town/q/${d.id}`;
       } else {
-        error = data.error || "Failed to save";
+        error = d?.error || "Failed to save";
       }
     } catch (e) {
       error = String(e);
@@ -51,49 +46,25 @@
   }
 
   async function handleExecutePreview() {
-    if (!savedQueryId) {
-      // Need to save first to execute
-      saving = true;
-      error = null;
-      try {
-        const res = await fetch(`/${db}/-/api/town/queries/new`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title || "Untitled",
-            description,
-            sql: sqlValue,
-            is_public: isPublic,
-          }),
-        });
-        const data = await res.json();
-        if (data.ok) {
-          savedQueryId = data.id;
-        } else {
-          error = data.error || "Failed to save";
-          saving = false;
-          return;
-        }
-      } catch (e) {
-        error = String(e);
-        saving = false;
-        return;
-      }
-      saving = false;
-    }
-
+    if (!sqlValue.trim()) return;
     previewLoading = true;
     previewError = null;
     try {
-      const res = await fetch(
-        `/${db}/-/api/town/queries/${savedQueryId}/execute`,
-        { method: "POST" },
-      );
-      const data = await res.json();
-      previewColumns = data.columns ?? [];
-      previewRows = data.rows ?? [];
-      previewTruncated = data.truncated ?? false;
-      previewError = data.error ?? null;
+      const url = `/${db}/-/query.json?sql=${encodeURIComponent(sqlValue)}`;
+      const res = await fetch(url);
+      const d = await res.json();
+      if (!d.ok) {
+        previewError = d.error ?? "Query failed";
+        previewColumns = [];
+        previewRows = [];
+        previewTruncated = false;
+      } else {
+        const rowObjects: Record<string, unknown>[] = d.rows ?? [];
+        previewColumns = rowObjects.length > 0 ? Object.keys(rowObjects[0]) : [];
+        previewRows = rowObjects.map((r) => previewColumns.map((c) => r[c]));
+        previewTruncated = d.truncated ?? false;
+        previewError = null;
+      }
     } catch (e) {
       previewError = String(e);
     } finally {

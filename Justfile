@@ -28,6 +28,10 @@ dev *flags:
         datasette \
         -p 8005 \
         -s permissions.datasette-town-access.newsroom "daily-planet" \
+        -s permissions.datasette-town-create.newsroom "daily-planet" \
+        -s permissions.datasette-town-view.newsroom "daily-planet" \
+        -s permissions.datasette-town-edit.newsroom "daily-planet" \
+        -s permissions.datasette-town-manage.newsroom "daily-planet" \
         {{flags}}
 
 dev-with-hmr *flags:

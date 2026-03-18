@@ -28,8 +28,6 @@ def datasette_instance(db_path):
             "permissions": {
                 "datasette-town-access": {"id": "*"},
                 "datasette-town-create": {"id": "*"},
-                "datasette-town-view-shared": {"id": "*"},
-                "datasette-town-edit-shared": {"id": "*"},
             }
         },
     )

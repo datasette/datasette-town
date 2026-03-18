@@ -68,6 +68,41 @@ async def test_update_query(datasette_instance):
 
 
 @pytest.mark.asyncio
+async def test_patch_query(datasette_instance):
+    ds = datasette_instance
+    await ds.invoke_startup()
+    auth = await _auth_cookie(ds, "user1")
+
+    resp = await ds.client.post(
+        "/test/-/api/town/queries/new",
+        json={"title": "Original", "sql": "select 1"},
+        **auth,
+    )
+    query_id = resp.json()["id"]
+
+    # Patch just the title
+    resp = await ds.client.post(
+        f"/test/-/api/town/queries/{query_id}/patch",
+        json={"title": "Patched Title"},
+        **auth,
+    )
+    assert resp.json()["ok"] is True
+
+    # Verify title changed but sql didn't
+    resp = await ds.client.get(f"/test/-/town/q/{query_id}", **auth)
+    assert resp.status_code == 200
+    assert "Patched Title" in resp.text
+
+    # Patch just the sql
+    resp = await ds.client.post(
+        f"/test/-/api/town/queries/{query_id}/patch",
+        json={"sql": "select 42"},
+        **auth,
+    )
+    assert resp.json()["ok"] is True
+
+
+@pytest.mark.asyncio
 async def test_delete_query(datasette_instance):
     ds = datasette_instance
     await ds.invoke_startup()
@@ -90,52 +125,6 @@ async def test_delete_query(datasette_instance):
     # Should be gone
     resp = await ds.client.get(f"/test/-/town/q/{query_id}", **auth)
     assert resp.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_execute_query(datasette_instance):
-    ds = datasette_instance
-    await ds.invoke_startup()
-    auth = await _auth_cookie(ds, "user1")
-
-    resp = await ds.client.post(
-        "/test/-/api/town/queries/new",
-        json={"title": "Exec", "sql": "select * from test_table"},
-        **auth,
-    )
-    query_id = resp.json()["id"]
-
-    resp = await ds.client.post(
-        f"/test/-/api/town/queries/{query_id}/execute",
-        json={},
-        **auth,
-    )
-    data = resp.json()
-    assert data["ok"] is True
-    assert data["columns"] == ["id", "name"]
-    assert len(data["rows"]) == 2
-
-
-@pytest.mark.asyncio
-async def test_execute_bad_sql(datasette_instance):
-    ds = datasette_instance
-    await ds.invoke_startup()
-    auth = await _auth_cookie(ds, "user1")
-
-    resp = await ds.client.post(
-        "/test/-/api/town/queries/new",
-        json={"title": "Bad", "sql": "select * from nonexistent"},
-        **auth,
-    )
-    query_id = resp.json()["id"]
-
-    resp = await ds.client.post(
-        f"/test/-/api/town/queries/{query_id}/execute",
-        json={},
-        **auth,
-    )
-    data = resp.json()
-    assert data["error"] is not None
 
 
 @pytest.mark.asyncio

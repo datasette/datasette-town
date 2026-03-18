@@ -1,16 +1,18 @@
 from datasette import hookimpl
-from datasette.permissions import Action
+from datasette.permissions import Action, PermissionSQL
 from datasette_vite import vite_entry
 from sqlite_utils import Database
 import os
 
 from .internal_migrations import internal_migrations
+from .resources import TownQueryResource
 from .router import (
     router,
     TOWN_ACCESS_NAME,
     TOWN_CREATE_NAME,
-    TOWN_VIEW_SHARED_NAME,
-    TOWN_EDIT_SHARED_NAME,
+    TOWN_VIEW_NAME,
+    TOWN_EDIT_NAME,
+    TOWN_MANAGE_NAME,
 )
 
 # Import route modules to trigger route registration on the shared router
@@ -55,14 +57,65 @@ def register_actions(datasette):
             description="Can create new queries for a database",
         ),
         Action(
-            name=TOWN_VIEW_SHARED_NAME,
-            description="Can view queries shared with them",
+            name=TOWN_VIEW_NAME,
+            description="Can view/execute a town query",
+            resource_class=TownQueryResource,
         ),
         Action(
-            name=TOWN_EDIT_SHARED_NAME,
-            description="Can edit queries where they have edit access",
+            name=TOWN_EDIT_NAME,
+            description="Can edit a town query",
+            resource_class=TownQueryResource,
+            also_requires=TOWN_VIEW_NAME,
+        ),
+        Action(
+            name=TOWN_MANAGE_NAME,
+            description="Can share/delete a town query",
+            resource_class=TownQueryResource,
+            also_requires=TOWN_EDIT_NAME,
         ),
     ]
+
+
+@hookimpl
+def permission_resources_sql(datasette, actor, action):
+    actor_id = actor.get("id") if actor else None
+
+    if action == TOWN_VIEW_NAME:
+        return PermissionSQL(
+            sql="""
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
+                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
+                UNION ALL
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'shared with actor' AS reason
+                FROM datasette_town_queries q JOIN datasette_town_shares s ON s.query_id = q.id
+                WHERE s.actor_id = :actor_id
+                UNION ALL
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'public query' AS reason
+                FROM datasette_town_queries q WHERE q.is_public = 1
+            """,
+            params={"actor_id": actor_id},
+        )
+    elif action == TOWN_EDIT_NAME:
+        return PermissionSQL(
+            sql="""
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
+                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
+                UNION ALL
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'editor share' AS reason
+                FROM datasette_town_queries q JOIN datasette_town_shares s ON s.query_id = q.id
+                WHERE s.actor_id = :actor_id AND s.can_edit = 1
+            """,
+            params={"actor_id": actor_id},
+        )
+    elif action == TOWN_MANAGE_NAME:
+        return PermissionSQL(
+            sql="""
+                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
+                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
+            """,
+            params={"actor_id": actor_id},
+        )
+    return None
 
 
 @hookimpl

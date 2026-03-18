@@ -68,6 +68,30 @@ class InternalDB:
 
         return await self.db.execute_write_fn(write)
 
+    async def patch_query(self, query_id: str, **fields):
+        """Update only the provided fields."""
+        if not fields:
+            return
+        col_map = {"title": "title", "description": "description", "sql": "sql", "is_public": "is_public"}
+        set_parts = []
+        values = []
+        for key, val in fields.items():
+            if key not in col_map:
+                continue
+            set_parts.append(f"{col_map[key]} = ?")
+            values.append(int(val) if key == "is_public" else val)
+        if not set_parts:
+            return
+        set_parts.append("updated_at = strftime('%Y-%m-%dT%H:%M:%f', 'now')")
+        values.append(query_id)
+        sql = f"UPDATE datasette_town_queries SET {', '.join(set_parts)} WHERE id = ?"
+
+        def write(conn):
+            with conn:
+                conn.execute(sql, values)
+
+        return await self.db.execute_write_fn(write)
+
     async def delete_query(self, query_id: str):
         def write(conn):
             with conn:

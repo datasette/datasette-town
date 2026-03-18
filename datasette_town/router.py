@@ -7,8 +7,9 @@ router = Router()
 
 TOWN_ACCESS_NAME = "datasette-town-access"
 TOWN_CREATE_NAME = "datasette-town-create"
-TOWN_VIEW_SHARED_NAME = "datasette-town-view-shared"
-TOWN_EDIT_SHARED_NAME = "datasette-town-edit-shared"
+TOWN_VIEW_NAME = "datasette-town-view"
+TOWN_EDIT_NAME = "datasette-town-edit"
+TOWN_MANAGE_NAME = "datasette-town-manage"
 
 
 def check_permission(action=None):
