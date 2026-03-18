@@ -256,12 +256,10 @@
   </div>
 
   <div class="meta">
-    <span class="author">
-      {#if query.actor_profile_picture_url}
-        <img class="meta-avatar" src={query.actor_profile_picture_url} alt={query.actor_id} />
-      {/if}
+    <a class="author" href="/-/profile/{query.actor_id}">
+      <img class="meta-avatar" src="/-/profile/pic/{query.actor_id}" alt={query.actor_id} />
       by {query.actor_id}
-    </span>
+    </a>
     {#if query.is_public}<span class="badge public">Public</span>{/if}
     <span class="timestamp"><Timestamp value={query.updated_at} prefix="Updated " /></span>
   </div>
@@ -440,6 +438,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .author:hover {
+    text-decoration: underline;
   }
   .meta-avatar {
     width: 20px;

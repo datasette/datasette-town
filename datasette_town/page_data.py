@@ -12,7 +12,6 @@ class QuerySummary(BaseModel):
     created_at: str
     updated_at: str
     can_edit: bool = False
-    actor_profile_picture_url: str | None = None
 
 
 class ShareInfo(BaseModel):

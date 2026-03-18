@@ -32,6 +32,7 @@ dev *flags:
         -s permissions.datasette-town-view.newsroom "daily-planet" \
         -s permissions.datasette-town-edit.newsroom "daily-planet" \
         -s permissions.datasette-town-manage.newsroom "daily-planet" \
+        -s permissions.profile_access.id "*" \
         {{flags}}
 
 dev-with-hmr *flags:

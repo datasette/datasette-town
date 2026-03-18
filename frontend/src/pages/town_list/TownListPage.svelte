@@ -50,24 +50,21 @@
       <h3>My Queries</h3>
       <div class="query-grid">
         {#each filteredMy as q}
-          <a href="/{db}/-/town/q/{q.id}" class="query-card">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
-                <div class="author">
-                  {#if q.actor_profile_picture_url}
-                    <img class="avatar" src={q.actor_profile_picture_url} alt={q.actor_id} />
-                  {:else}
-                    <span class="avatar avatar-letter">{q.actor_id.charAt(0).toUpperCase()}</span>
-                  {/if}
+                <a class="author" href="/-/profile/{q.actor_id}">
+                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
                   <span class="author-name">{q.actor_id}</span>
-                </div>
+                </a>
                 {#if q.is_public}<span class="badge public">Public</span>{/if}
                 <span class="timestamp"><Timestamp value={q.updated_at} /></span>
               </div>
             </div>
-          </a>
+          </div>
         {/each}
       </div>
     </section>
@@ -78,24 +75,21 @@
       <h3>Shared with Me</h3>
       <div class="query-grid">
         {#each filteredShared as q}
-          <a href="/{db}/-/town/q/{q.id}" class="query-card">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
-                <div class="author">
-                  {#if q.actor_profile_picture_url}
-                    <img class="avatar" src={q.actor_profile_picture_url} alt={q.actor_id} />
-                  {:else}
-                    <span class="avatar avatar-letter">{q.actor_id.charAt(0).toUpperCase()}</span>
-                  {/if}
+                <a class="author" href="/-/profile/{q.actor_id}">
+                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
                   <span class="author-name">{q.actor_id}</span>
-                </div>
+                </a>
                 {#if q.can_edit}<span class="badge edit">Can edit</span>{/if}
                 <span class="timestamp"><Timestamp value={q.updated_at} /></span>
               </div>
             </div>
-          </a>
+          </div>
         {/each}
       </div>
     </section>
@@ -106,23 +100,20 @@
       <h3>Public Queries</h3>
       <div class="query-grid">
         {#each filteredPublic as q}
-          <a href="/{db}/-/town/q/{q.id}" class="query-card">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
-                <div class="author">
-                  {#if q.actor_profile_picture_url}
-                    <img class="avatar" src={q.actor_profile_picture_url} alt={q.actor_id} />
-                  {:else}
-                    <span class="avatar avatar-letter">{q.actor_id.charAt(0).toUpperCase()}</span>
-                  {/if}
+                <a class="author" href="/-/profile/{q.actor_id}">
+                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
                   <span class="author-name">{q.actor_id}</span>
-                </div>
+                </a>
                 <span class="timestamp"><Timestamp value={q.updated_at} /></span>
               </div>
             </div>
-          </a>
+          </div>
         {/each}
       </div>
     </section>
@@ -207,8 +198,8 @@
     max-width: 420px;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    text-decoration: none;
     color: inherit;
+    cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s;
     overflow: hidden;
   }
@@ -254,6 +245,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .author:hover .author-name {
+    text-decoration: underline;
   }
   .avatar {
     width: 20px;
@@ -261,15 +257,6 @@
     border-radius: 50%;
     flex-shrink: 0;
     object-fit: cover;
-  }
-  .avatar-letter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #e8eaed;
-    color: #5f6368;
-    font-size: 11px;
-    font-weight: 500;
   }
   .author-name {
     color: #6b7280;
