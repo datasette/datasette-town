@@ -203,7 +203,13 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="query-detail" onclick={() => (menuOpen = false)}>
+<div
+  class="query-detail"
+  onclick={() => (menuOpen = false)}
+  onkeydown={(e) => {
+    if (e.key === "Escape") menuOpen = false;
+  }}
+>
   <div class="header">
     <a href="/{db}/-/town" class="back-link">&larr; Back to Town</a>
   </div>
@@ -214,6 +220,7 @@
 
   <div class="title-row">
     {#if editingTitle}
+      <!-- svelte-ignore a11y_autofocus -->
       <input
         class="inline-edit inline-edit-title"
         type="text"
@@ -271,6 +278,7 @@
           </button>
           {#if menuOpen}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div class="dropdown-menu" onclick={(e) => e.stopPropagation()}>
               <button class="dropdown-item danger" onclick={handleDelete}
                 >Delete query</button
@@ -284,6 +292,7 @@
 
   <div class="description-row">
     {#if editingDescription}
+      <!-- svelte-ignore a11y_autofocus -->
       <textarea
         class="inline-edit"
         bind:value={editDescription}

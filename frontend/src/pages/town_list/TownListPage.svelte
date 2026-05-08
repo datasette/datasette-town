@@ -29,6 +29,16 @@
   function sqlLines(sql: string): string {
     return sql.trim();
   }
+
+  function openCard(e: MouseEvent | KeyboardEvent, queryId: string) {
+    if (e.type === "keydown") {
+      const ke = e as KeyboardEvent;
+      if (ke.key !== "Enter" && ke.key !== " ") return;
+      ke.preventDefault();
+    }
+    if ((e.target as HTMLElement).closest("a")) return;
+    window.location.href = `/${db}/-/town/q/${queryId}`;
+  }
 </script>
 
 <div class="town-list">
@@ -46,13 +56,12 @@
       <h3>My Queries</h3>
       <div class="query-grid">
         {#each filteredMy as q}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
             class="query-card"
-            onclick={(e) => {
-              if (!(e.target as HTMLElement).closest("a"))
-                window.location.href = `/${db}/-/town/q/${q.id}`;
-            }}
+            role="button"
+            tabindex="0"
+            onclick={(e) => openCard(e, q.id)}
+            onkeydown={(e) => openCard(e, q.id)}
           >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
@@ -82,13 +91,12 @@
       <h3>Shared with Me</h3>
       <div class="query-grid">
         {#each filteredShared as q}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
             class="query-card"
-            onclick={(e) => {
-              if (!(e.target as HTMLElement).closest("a"))
-                window.location.href = `/${db}/-/town/q/${q.id}`;
-            }}
+            role="button"
+            tabindex="0"
+            onclick={(e) => openCard(e, q.id)}
+            onkeydown={(e) => openCard(e, q.id)}
           >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
@@ -118,13 +126,12 @@
       <h3>Public Queries</h3>
       <div class="query-grid">
         {#each filteredPublic as q}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
             class="query-card"
-            onclick={(e) => {
-              if (!(e.target as HTMLElement).closest("a"))
-                window.location.href = `/${db}/-/town/q/${q.id}`;
-            }}
+            role="button"
+            tabindex="0"
+            onclick={(e) => openCard(e, q.id)}
+            onkeydown={(e) => openCard(e, q.id)}
           >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
@@ -252,6 +259,7 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     white-space: pre-wrap;
     word-break: break-all;

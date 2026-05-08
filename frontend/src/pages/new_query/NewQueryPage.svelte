@@ -102,6 +102,7 @@
     </div>
 
     <div class="field">
+      <!-- svelte-ignore a11y_label_has_associated_control -->
       <label>SQL</label>
       <SqlEditor bind:value={sqlValue} onexecute={handleExecutePreview} />
     </div>

@@ -26,7 +26,17 @@ export default defineConfig({
     },
   },
   plugins: [
-    svelte(),
+    svelte({
+      dynamicCompileOptions({ filename }) {
+        // svelte.config.js sets customElement: true globally so svelte-check
+        // is happy with ProfileSection's <svelte:options customElement>.
+        // For the build, narrow that to only the profile_section entry —
+        // every other component should compile normally.
+        if (!filename?.includes("/profile_section/")) {
+          return { customElement: false };
+        }
+      },
+    }),
     {
       name: "page-data-types",
       async buildStart() {
