@@ -12,8 +12,12 @@
     onexecute?: () => void;
   }
 
-  let { value = $bindable(""), readonly = false, onchange, onexecute }: Props =
-    $props();
+  let {
+    value = $bindable(""),
+    readonly = false,
+    onchange,
+    onexecute,
+  }: Props = $props();
 
   let container: HTMLDivElement;
   let view: EditorView;

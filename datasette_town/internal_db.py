@@ -1,6 +1,5 @@
 from datasette.database import Database
 from ulid import ULID
-import json
 
 
 def ulid_new():
@@ -12,7 +11,13 @@ class InternalDB:
         self.db = internal_db
 
     async def create_query(
-        self, database_name: str, actor_id: str, title: str, description: str, sql: str, is_public: bool
+        self,
+        database_name: str,
+        actor_id: str,
+        title: str,
+        description: str,
+        sql: str,
+        is_public: bool,
     ) -> str:
         def write(conn) -> str:
             with conn:
@@ -22,11 +27,19 @@ class InternalDB:
                     INSERT INTO datasette_town_queries(id, database_name, actor_id, title, description, sql, is_public)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    [query_id, database_name, actor_id, title, description, sql, int(is_public)],
+                    [
+                        query_id,
+                        database_name,
+                        actor_id,
+                        title,
+                        description,
+                        sql,
+                        int(is_public),
+                    ],
                 )
                 return query_id
 
-        return await self.db.execute_write_fn(write)  # type: ignore
+        return await self.db.execute_write_fn(write)
 
     async def get_query(self, query_id: str) -> dict | None:
         def read(conn):
@@ -49,7 +62,7 @@ class InternalDB:
                 "updated_at": row[8],
             }
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)
 
     async def update_query(
         self, query_id: str, title: str, description: str, sql: str, is_public: bool
@@ -72,7 +85,12 @@ class InternalDB:
         """Update only the provided fields."""
         if not fields:
             return
-        col_map = {"title": "title", "description": "description", "sql": "sql", "is_public": "is_public"}
+        col_map = {
+            "title": "title",
+            "description": "description",
+            "sql": "sql",
+            "is_public": "is_public",
+        }
         set_parts = []
         values = []
         for key, val in fields.items():
@@ -95,12 +113,18 @@ class InternalDB:
     async def delete_query(self, query_id: str):
         def write(conn):
             with conn:
-                conn.execute("DELETE FROM datasette_town_shares WHERE query_id = ?", [query_id])
-                conn.execute("DELETE FROM datasette_town_queries WHERE id = ?", [query_id])
+                conn.execute(
+                    "DELETE FROM datasette_town_shares WHERE query_id = ?", [query_id]
+                )
+                conn.execute(
+                    "DELETE FROM datasette_town_queries WHERE id = ?", [query_id]
+                )
 
         return await self.db.execute_write_fn(write)
 
-    async def list_queries_for_actor(self, database_name: str, actor_id: str) -> list[dict]:
+    async def list_queries_for_actor(
+        self, database_name: str, actor_id: str
+    ) -> list[dict]:
         def read(conn):
             rows = conn.execute(
                 """
@@ -113,16 +137,24 @@ class InternalDB:
             ).fetchall()
             return [
                 {
-                    "id": r[0], "database_name": r[1], "actor_id": r[2],
-                    "title": r[3], "description": r[4], "sql": r[5],
-                    "is_public": bool(r[6]), "created_at": r[7], "updated_at": r[8],
+                    "id": r[0],
+                    "database_name": r[1],
+                    "actor_id": r[2],
+                    "title": r[3],
+                    "description": r[4],
+                    "sql": r[5],
+                    "is_public": bool(r[6]),
+                    "created_at": r[7],
+                    "updated_at": r[8],
                 }
                 for r in rows
             ]
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)
 
-    async def list_shared_queries_for_actor(self, database_name: str, actor_id: str) -> list[dict]:
+    async def list_shared_queries_for_actor(
+        self, database_name: str, actor_id: str
+    ) -> list[dict]:
         def read(conn):
             rows = conn.execute(
                 """
@@ -137,15 +169,21 @@ class InternalDB:
             ).fetchall()
             return [
                 {
-                    "id": r[0], "database_name": r[1], "actor_id": r[2],
-                    "title": r[3], "description": r[4], "sql": r[5],
-                    "is_public": bool(r[6]), "created_at": r[7], "updated_at": r[8],
+                    "id": r[0],
+                    "database_name": r[1],
+                    "actor_id": r[2],
+                    "title": r[3],
+                    "description": r[4],
+                    "sql": r[5],
+                    "is_public": bool(r[6]),
+                    "created_at": r[7],
+                    "updated_at": r[8],
                     "can_edit": bool(r[9]),
                 }
                 for r in rows
             ]
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)
 
     async def list_public_queries(self, database_name: str) -> list[dict]:
         def read(conn):
@@ -160,14 +198,20 @@ class InternalDB:
             ).fetchall()
             return [
                 {
-                    "id": r[0], "database_name": r[1], "actor_id": r[2],
-                    "title": r[3], "description": r[4], "sql": r[5],
-                    "is_public": bool(r[6]), "created_at": r[7], "updated_at": r[8],
+                    "id": r[0],
+                    "database_name": r[1],
+                    "actor_id": r[2],
+                    "title": r[3],
+                    "description": r[4],
+                    "sql": r[5],
+                    "is_public": bool(r[6]),
+                    "created_at": r[7],
+                    "updated_at": r[8],
                 }
                 for r in rows
             ]
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)
 
     async def add_share(self, query_id: str, actor_id: str, can_edit: bool) -> str:
         def write(conn) -> str:
@@ -182,12 +226,14 @@ class InternalDB:
                 )
                 return share_id
 
-        return await self.db.execute_write_fn(write)  # type: ignore
+        return await self.db.execute_write_fn(write)
 
     async def remove_share(self, share_id: str):
         def write(conn):
             with conn:
-                conn.execute("DELETE FROM datasette_town_shares WHERE id = ?", [share_id])
+                conn.execute(
+                    "DELETE FROM datasette_town_shares WHERE id = ?", [share_id]
+                )
 
         return await self.db.execute_write_fn(write)
 
@@ -214,13 +260,16 @@ class InternalDB:
             ).fetchall()
             return [
                 {
-                    "id": r[0], "query_id": r[1], "actor_id": r[2],
-                    "can_edit": bool(r[3]), "created_at": r[4],
+                    "id": r[0],
+                    "query_id": r[1],
+                    "actor_id": r[2],
+                    "can_edit": bool(r[3]),
+                    "created_at": r[4],
                 }
                 for r in rows
             ]
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)
 
     async def get_share_for_actor(self, query_id: str, actor_id: str) -> dict | None:
         def read(conn):
@@ -232,8 +281,11 @@ class InternalDB:
             if row is None:
                 return None
             return {
-                "id": row[0], "query_id": row[1], "actor_id": row[2],
-                "can_edit": bool(row[3]), "created_at": row[4],
+                "id": row[0],
+                "query_id": row[1],
+                "actor_id": row[2],
+                "can_edit": bool(row[3]),
+                "created_at": row[4],
             }
 
-        return await self.db.execute_write_fn(read)  # type: ignore
+        return await self.db.execute_write_fn(read)

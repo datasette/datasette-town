@@ -19,9 +19,7 @@ def check_permission(action=None):
     def decorator(func):
         @wraps(func)
         async def wrapper(datasette, request, **kwargs):
-            result = await datasette.allowed(
-                action=action_name, actor=request.actor
-            )
+            result = await datasette.allowed(action=action_name, actor=request.actor)
             if not result:
                 raise Forbidden(f"Permission denied for {action_name}")
             return await func(datasette=datasette, request=request, **kwargs)

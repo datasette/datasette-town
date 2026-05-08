@@ -14,7 +14,6 @@ from ..router import (
     router,
     check_permission,
     TOWN_CREATE_NAME,
-    TOWN_VIEW_NAME,
     TOWN_EDIT_NAME,
     TOWN_MANAGE_NAME,
 )
@@ -34,10 +33,16 @@ async def _check_resource_permission(datasette, request, database, query_id, act
     idb = InternalDB(datasette.get_internal_database())
     query = await idb.get_query(query_id)
     if query is None:
-        return None, Response.json({"ok": False, "error": "Query not found"}, status=404)
+        return None, Response.json(
+            {"ok": False, "error": "Query not found"}, status=404
+        )
     resource = TownQueryResource(database=database, query_id=query_id)
-    if not await datasette.allowed(action=action, resource=resource, actor=request.actor):
-        return None, Response.json({"ok": False, "error": "Permission denied"}, status=403)
+    if not await datasette.allowed(
+        action=action, resource=resource, actor=request.actor
+    ):
+        return None, Response.json(
+            {"ok": False, "error": "Permission denied"}, status=403
+        )
     return query, None
 
 
@@ -49,7 +54,9 @@ async def api_create_query(
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
     idb = InternalDB(datasette.get_internal_database())
 
@@ -67,14 +74,22 @@ async def api_create_query(
 
 @router.POST("/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/update$")
 async def api_update_query(
-    datasette, request, database: str, query_id: str, body: Annotated[UpdateQueryRequest, Body()]
+    datasette,
+    request,
+    database: str,
+    query_id: str,
+    body: Annotated[UpdateQueryRequest, Body()],
 ):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_EDIT_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_EDIT_NAME
+    )
     if err:
         return err
 
@@ -92,14 +107,22 @@ async def api_update_query(
 
 @router.POST("/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/patch$")
 async def api_patch_query(
-    datasette, request, database: str, query_id: str, body: Annotated[PatchQueryRequest, Body()]
+    datasette,
+    request,
+    database: str,
+    query_id: str,
+    body: Annotated[PatchQueryRequest, Body()],
 ):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_EDIT_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_EDIT_NAME
+    )
     if err:
         return err
 
@@ -116,9 +139,13 @@ async def api_delete_query(datasette, request, database: str, query_id: str):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_MANAGE_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_MANAGE_NAME
+    )
     if err:
         return err
 
@@ -132,9 +159,13 @@ async def api_list_shares(datasette, request, database: str, query_id: str):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_MANAGE_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_MANAGE_NAME
+    )
     if err:
         return err
 
@@ -145,14 +176,22 @@ async def api_list_shares(datasette, request, database: str, query_id: str):
 
 @router.POST("/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/shares/add$")
 async def api_add_share(
-    datasette, request, database: str, query_id: str, body: Annotated[AddShareRequest, Body()]
+    datasette,
+    request,
+    database: str,
+    query_id: str,
+    body: Annotated[AddShareRequest, Body()],
 ):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_MANAGE_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_MANAGE_NAME
+    )
     if err:
         return err
 
@@ -161,14 +200,22 @@ async def api_add_share(
     return Response.json({"ok": True, "id": share_id})
 
 
-@router.POST("/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/shares/(?P<share_id>[^/]+)/remove$")
-async def api_remove_share(datasette, request, database: str, query_id: str, share_id: str):
+@router.POST(
+    "/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/shares/(?P<share_id>[^/]+)/remove$"
+)
+async def api_remove_share(
+    datasette, request, database: str, query_id: str, share_id: str
+):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_MANAGE_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_MANAGE_NAME
+    )
     if err:
         return err
 
@@ -177,20 +224,60 @@ async def api_remove_share(datasette, request, database: str, query_id: str, sha
     return Response.json({"ok": True})
 
 
-@router.POST("/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/shares/(?P<share_id>[^/]+)/update$")
+@router.POST(
+    "/(?P<database>[^/]+)/-/api/town/queries/(?P<query_id>[^/]+)/shares/(?P<share_id>[^/]+)/update$"
+)
 async def api_update_share(
-    datasette, request, database: str, query_id: str, share_id: str,
-    body: Annotated[UpdateShareRequest, Body()]
+    datasette,
+    request,
+    database: str,
+    query_id: str,
+    share_id: str,
+    body: Annotated[UpdateShareRequest, Body()],
 ):
     await ensure_migrations(datasette)
     actor_id = await _get_actor_id(request)
     if not actor_id:
-        return Response.json({"ok": False, "error": "Authentication required"}, status=401)
+        return Response.json(
+            {"ok": False, "error": "Authentication required"}, status=401
+        )
 
-    query, err = await _check_resource_permission(datasette, request, database, query_id, TOWN_MANAGE_NAME)
+    query, err = await _check_resource_permission(
+        datasette, request, database, query_id, TOWN_MANAGE_NAME
+    )
     if err:
         return err
 
     idb = InternalDB(datasette.get_internal_database())
     await idb.update_share(share_id, body.can_edit)
     return Response.json({"ok": True})
+
+
+@router.GET("/-/town/api/profile_queries$")
+@check_permission()
+async def api_profile_queries(datasette, request):
+    await ensure_migrations(datasette)
+    actor_id = request.args.get("actorId")
+    if not actor_id:
+        return Response.json({"data": []})
+
+    db = datasette.get_internal_database()
+    results = await db.execute(
+        """
+        SELECT
+          id,
+          database_name,
+          title,
+          description,
+          is_public,
+          updated_at,
+          (strftime('%s', 'now') - strftime('%s', updated_at)) as updated_duration_seconds
+        FROM datasette_town_queries
+        WHERE actor_id = :actor_id
+        ORDER BY updated_at DESC
+        LIMIT 100
+        """,
+        {"actor_id": actor_id},
+    )
+    data = [dict(row) for row in results.rows]
+    return Response.json({"data": data})

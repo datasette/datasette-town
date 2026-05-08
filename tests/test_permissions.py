@@ -13,6 +13,7 @@ Tests cover:
 - Anonymous user behavior
 - Mixed permission scenarios
 """
+
 import pytest
 from datasette.app import Datasette
 
@@ -55,7 +56,9 @@ def ds_access_only(db_path):
     )
 
 
-async def _create_query(ds, actor_id, title="Test Query", sql="select 1", is_public=False):
+async def _create_query(
+    ds, actor_id, title="Test Query", sql="select 1", is_public=False
+):
     auth = await _auth_cookie(ds, actor_id)
     resp = await ds.client.post(
         "/test/-/api/town/queries/new",
@@ -373,7 +376,9 @@ class TestPublicQueryAccess:
         assert resp.json()["ok"] is False
 
     @pytest.mark.asyncio
-    async def test_public_query_shares_not_manageable_by_stranger(self, ds_with_permissions):
+    async def test_public_query_shares_not_manageable_by_stranger(
+        self, ds_with_permissions
+    ):
         ds = ds_with_permissions
         await ds.invoke_startup()
         query_id = await _create_query(ds, "owner1", is_public=True)
@@ -790,7 +795,9 @@ class TestEdgeCases:
         ds = ds_with_permissions
         await ds.invoke_startup()
         query_id = await _create_query(ds, "owner1")
-        share_id = await _add_share(ds, "owner1", query_id, "future_user", can_edit=True)
+        share_id = await _add_share(
+            ds, "owner1", query_id, "future_user", can_edit=True
+        )
         assert share_id
 
     @pytest.mark.asyncio

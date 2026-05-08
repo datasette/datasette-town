@@ -1,5 +1,4 @@
 import pytest
-from datasette.app import Datasette
 
 
 async def _auth_cookie(ds, actor_id):

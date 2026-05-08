@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { loadPageData } from "../../page_data/load";
   import { appState } from "../../store.svelte";
   import { client } from "../../api";
   import SqlEditor from "../../components/SqlEditor.svelte";
   import QueryResults from "../../components/QueryResults.svelte";
-  import type { NewQueryPageData } from "../../page_data/NewQueryPageData.types";
 
-  const pageData = loadPageData<NewQueryPageData>();
   const db = appState.selectedDatabase;
 
   let title = $state("");
@@ -60,7 +57,7 @@
         previewTruncated = false;
       } else {
         const rowObjects: Record<string, unknown>[] = d.rows ?? [];
-        previewColumns = rowObjects.length > 0 ? Object.keys(rowObjects[0]) : [];
+        previewColumns = rowObjects[0] ? Object.keys(rowObjects[0]) : [];
         previewRows = rowObjects.map((r) => previewColumns.map((c) => r[c]));
         previewTruncated = d.truncated ?? false;
         previewError = null;
@@ -86,7 +83,12 @@
   <div class="form">
     <div class="field">
       <label for="title">Title</label>
-      <input id="title" type="text" bind:value={title} placeholder="Query title" />
+      <input
+        id="title"
+        type="text"
+        bind:value={title}
+        placeholder="Query title"
+      />
     </div>
 
     <div class="field">
@@ -112,7 +114,11 @@
     </div>
 
     <div class="actions">
-      <button class="btn btn-secondary" onclick={handleExecutePreview} disabled={!sqlValue.trim()}>
+      <button
+        class="btn btn-secondary"
+        onclick={handleExecutePreview}
+        disabled={!sqlValue.trim()}
+      >
         Execute
       </button>
       <button class="btn btn-primary" onclick={handleSave} disabled={saving}>

@@ -1,5 +1,4 @@
 import pytest
-from datasette.app import Datasette
 
 
 async def _auth_cookie(ds, actor_id):
@@ -16,7 +15,12 @@ async def test_create_query(datasette_instance):
 
     response = await ds.client.post(
         "/test/-/api/town/queries/new",
-        json={"title": "My Query", "description": "test", "sql": "select 1", "is_public": False},
+        json={
+            "title": "My Query",
+            "description": "test",
+            "sql": "select 1",
+            "is_public": False,
+        },
         **auth,
     )
     assert response.status_code == 200
@@ -61,7 +65,12 @@ async def test_update_query(datasette_instance):
     # Update
     resp = await ds.client.post(
         f"/test/-/api/town/queries/{query_id}/update",
-        json={"title": "Updated", "description": "", "sql": "select 2", "is_public": True},
+        json={
+            "title": "Updated",
+            "description": "",
+            "sql": "select 2",
+            "is_public": True,
+        },
         **auth,
     )
     assert resp.json()["ok"] is True

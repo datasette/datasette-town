@@ -17,13 +17,15 @@ dependencies = [
     "python-ulid>=3",
     "sqlite-migrate>=0.1b0",
     "sqlite-utils>=3.38",
-    "datasette-user-profiles",
+    "datasette-user-profiles>=0.1.0a5",
 ]
 
 [dependency-groups]
 dev = [
     "pytest",
-    "pytest-asyncio"
+    "pytest-asyncio",
+    "datasette-debug-gotham",
+    "datasette-sidebar"
 ]
 
 [build-system]
@@ -51,4 +53,3 @@ exclude = [
 
 [tool.setuptools.package-data]
 datasette_town = ["static/**/*", "templates/*", "manifest.json"]
-

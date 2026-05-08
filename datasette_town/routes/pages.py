@@ -64,7 +64,10 @@ async def town_list_page(datasette, request, database: str):
 
         shared_raw = await idb.list_shared_queries_for_actor(database, actor_id)
         shared_queries = [
-            QuerySummary(**{k: v for k, v in q.items() if k != "can_edit"}, can_edit=q.get("can_edit", False))
+            QuerySummary(
+                **{k: v for k, v in q.items() if k != "can_edit"},
+                can_edit=q.get("can_edit", False),
+            )
             for q in shared_raw
         ]
 
@@ -109,12 +112,18 @@ async def query_detail_page(datasette, request, database: str, query_id: str):
 
     resource = TownQueryResource(database=database, query_id=query_id)
 
-    can_view = await datasette.allowed(action=TOWN_VIEW_NAME, resource=resource, actor=request.actor)
+    can_view = await datasette.allowed(
+        action=TOWN_VIEW_NAME, resource=resource, actor=request.actor
+    )
     if not can_view:
         return Response.text("Permission denied", status=403)
 
-    can_edit = await datasette.allowed(action=TOWN_EDIT_NAME, resource=resource, actor=request.actor)
-    is_owner = await datasette.allowed(action=TOWN_MANAGE_NAME, resource=resource, actor=request.actor)
+    can_edit = await datasette.allowed(
+        action=TOWN_EDIT_NAME, resource=resource, actor=request.actor
+    )
+    is_owner = await datasette.allowed(
+        action=TOWN_MANAGE_NAME, resource=resource, actor=request.actor
+    )
 
     shares = []
     if is_owner:

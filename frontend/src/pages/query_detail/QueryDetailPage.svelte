@@ -43,11 +43,14 @@
 
   async function patchField(fields: Record<string, any>) {
     try {
-      const { data } = await client.POST("/{database}/-/api/town/queries/{query_id}/patch", {
-        params: { path: pathParams },
-        body: fields,
-        parseAs: "json",
-      });
+      const { data } = await client.POST(
+        "/{database}/-/api/town/queries/{query_id}/patch",
+        {
+          params: { path: pathParams },
+          body: fields,
+          parseAs: "json",
+        },
+      );
       if ((data as any)?.ok) {
         Object.assign(query, fields);
         return true;
@@ -98,10 +101,13 @@
     if (!confirm("Delete this query?")) return;
     menuOpen = false;
     try {
-      const { data } = await client.POST("/{database}/-/api/town/queries/{query_id}/delete", {
-        params: { path: pathParams },
-        parseAs: "json",
-      });
+      const { data } = await client.POST(
+        "/{database}/-/api/town/queries/{query_id}/delete",
+        {
+          params: { path: pathParams },
+          parseAs: "json",
+        },
+      );
       if ((data as any)?.ok) {
         window.location.href = `/${db}/-/town`;
       } else {
@@ -127,7 +133,7 @@
         truncated = false;
       } else {
         const rowObjects: Record<string, unknown>[] = d.rows ?? [];
-        columns = rowObjects.length > 0 ? Object.keys(rowObjects[0]) : [];
+        columns = rowObjects[0] ? Object.keys(rowObjects[0]) : [];
         rows = rowObjects.map((r) => columns.map((c) => r[c]));
         truncated = d.truncated ?? false;
         execError = null;
@@ -140,11 +146,14 @@
   }
 
   async function handleAddShare(actorId: string, canEdit: boolean) {
-    const { data } = await client.POST("/{database}/-/api/town/queries/{query_id}/shares/add", {
-      params: { path: pathParams },
-      body: { actor_id: actorId, can_edit: canEdit },
-      parseAs: "json",
-    });
+    const { data } = await client.POST(
+      "/{database}/-/api/town/queries/{query_id}/shares/add",
+      {
+        params: { path: pathParams },
+        body: { actor_id: actorId, can_edit: canEdit },
+        parseAs: "json",
+      },
+    );
     if ((data as any)?.ok) {
       shares = [
         ...shares,
@@ -160,23 +169,31 @@
   }
 
   async function handleRemoveShare(shareId: string) {
-    const { data } = await client.POST("/{database}/-/api/town/queries/{query_id}/shares/{share_id}/remove", {
-      params: { path: { ...pathParams, share_id: shareId } },
-      parseAs: "json",
-    });
+    const { data } = await client.POST(
+      "/{database}/-/api/town/queries/{query_id}/shares/{share_id}/remove",
+      {
+        params: { path: { ...pathParams, share_id: shareId } },
+        parseAs: "json",
+      },
+    );
     if ((data as any)?.ok) {
       shares = shares.filter((s) => s.id !== shareId);
     }
   }
 
   async function handleToggleShare(shareId: string, canEdit: boolean) {
-    const { data } = await client.POST("/{database}/-/api/town/queries/{query_id}/shares/{share_id}/update", {
-      params: { path: { ...pathParams, share_id: shareId } },
-      body: { can_edit: canEdit },
-      parseAs: "json",
-    });
+    const { data } = await client.POST(
+      "/{database}/-/api/town/queries/{query_id}/shares/{share_id}/update",
+      {
+        params: { path: { ...pathParams, share_id: shareId } },
+        body: { can_edit: canEdit },
+        parseAs: "json",
+      },
+    );
     if ((data as any)?.ok) {
-      shares = shares.map((s) => (s.id === shareId ? { ...s, can_edit: canEdit } : s));
+      shares = shares.map((s) =>
+        s.id === shareId ? { ...s, can_edit: canEdit } : s,
+      );
     }
   }
 
@@ -201,7 +218,10 @@
         class="inline-edit inline-edit-title"
         type="text"
         bind:value={editTitle}
-        onkeydown={(e) => { if (e.key === "Enter") saveTitle(); if (e.key === "Escape") editingTitle = false; }}
+        onkeydown={(e) => {
+          if (e.key === "Enter") saveTitle();
+          if (e.key === "Escape") editingTitle = false;
+        }}
         autofocus
         onblur={saveTitle}
       />
@@ -210,22 +230,51 @@
         {query.title || "Untitled"}
         {#if canEdit}
           <button class="icon-btn" onclick={startEditTitle} title="Edit title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+              ><path
+                d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+              /></svg
+            >
           </button>
         {/if}
       </h2>
     {/if}
     <div class="title-actions">
       {#if isOwner}
-        <button class="btn btn-secondary" onclick={() => (shareOpen = true)}>Share</button>
+        <button class="btn btn-secondary" onclick={() => (shareOpen = true)}
+          >Share</button
+        >
         <div class="menu-container">
-          <button class="icon-btn menu-trigger" onclick={(e) => { e.stopPropagation(); menuOpen = !menuOpen; }} title="More actions">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/></svg>
+          <button
+            class="icon-btn menu-trigger"
+            onclick={(e) => {
+              e.stopPropagation();
+              menuOpen = !menuOpen;
+            }}
+            title="More actions"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+              ><path
+                d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"
+              /></svg
+            >
           </button>
           {#if menuOpen}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div class="dropdown-menu" onclick={(e) => e.stopPropagation()}>
-              <button class="dropdown-item danger" onclick={handleDelete}>Delete query</button>
+              <button class="dropdown-item danger" onclick={handleDelete}
+                >Delete query</button
+              >
             </div>
           {/if}
         </div>
@@ -239,7 +288,9 @@
         class="inline-edit"
         bind:value={editDescription}
         rows="2"
-        onkeydown={(e) => { if (e.key === "Escape") editingDescription = false; }}
+        onkeydown={(e) => {
+          if (e.key === "Escape") editingDescription = false;
+        }}
         autofocus
         onblur={saveDescription}
       ></textarea>
@@ -247,8 +298,21 @@
       <p class="description">
         {query.description || "No description"}
         {#if canEdit}
-          <button class="icon-btn" onclick={startEditDescription} title="Edit description">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>
+          <button
+            class="icon-btn"
+            onclick={startEditDescription}
+            title="Edit description"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+              ><path
+                d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+              /></svg
+            >
           </button>
         {/if}
       </p>
@@ -257,26 +321,52 @@
 
   <div class="meta">
     <a class="author" href="/-/profile/{query.actor_id}">
-      <img class="meta-avatar" src="/-/profile/pic/{query.actor_id}" alt={query.actor_id} />
+      <img
+        class="meta-avatar"
+        src="/-/profile/pic/{query.actor_id}"
+        alt={query.actor_id}
+      />
       by {query.actor_id}
     </a>
     {#if query.is_public}<span class="badge public">Public</span>{/if}
-    <span class="timestamp"><Timestamp value={query.updated_at} prefix="Updated " /></span>
+    <span class="timestamp"
+      ><Timestamp value={query.updated_at} prefix="Updated " /></span
+    >
   </div>
 
   <div class="sql-section">
     {#if editingSql}
       <SqlEditor bind:value={editSql} onexecute={handleExecute} />
       <div class="sql-edit-actions">
-        <button class="btn btn-sm btn-secondary" onclick={() => editingSql = false}>Cancel</button>
+        <button
+          class="btn btn-sm btn-secondary"
+          onclick={() => (editingSql = false)}>Cancel</button
+        >
         <button class="btn btn-sm btn-primary" onclick={saveSql}>Save</button>
       </div>
     {:else}
       <div class="sql-view">
-        <SqlEditor value={query.sql} readonly={true} onexecute={handleExecute} />
+        <SqlEditor
+          value={query.sql}
+          readonly={true}
+          onexecute={handleExecute}
+        />
         {#if canEdit}
-          <button class="icon-btn sql-edit-btn" onclick={startEditSql} title="Edit SQL">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>
+          <button
+            class="icon-btn sql-edit-btn"
+            onclick={startEditSql}
+            title="Edit SQL"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+              ><path
+                d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+              /></svg
+            >
           </button>
         {/if}
       </div>
@@ -284,15 +374,24 @@
   </div>
 
   <div class="execute-row">
-    <button class="btn btn-primary" onclick={handleExecute} disabled={execLoading}>
+    <button
+      class="btn btn-primary"
+      onclick={handleExecute}
+      disabled={execLoading}
+    >
       {execLoading ? "Running..." : "Execute"}
     </button>
   </div>
 
-  <QueryResults {columns} {rows} error={execError} loading={execLoading} {truncated} />
+  <QueryResults
+    {columns}
+    {rows}
+    error={execError}
+    loading={execLoading}
+    {truncated}
+  />
 
   <ShareDialog
-    queryId={query.id}
     {shares}
     open={shareOpen}
     isPublic={query.is_public}

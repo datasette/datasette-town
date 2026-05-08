@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { appState } from "../store.svelte";
-
   interface Share {
     id: string;
     query_id: string;
@@ -10,7 +8,6 @@
   }
 
   interface Props {
-    queryId: string;
     shares: Share[];
     open: boolean;
     isPublic: boolean;
@@ -22,7 +19,6 @@
   }
 
   let {
-    queryId,
     shares,
     open,
     isPublic,
@@ -65,7 +61,11 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="overlay" onclick={onclose} onkeydown={handleKeydown}>
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="dialog" onclick={(e) => e.stopPropagation()} onkeydown={handleKeydown}>
+    <div
+      class="dialog"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={handleKeydown}
+    >
       <div class="dialog-header">
         <h3>Share this query</h3>
       </div>
@@ -96,7 +96,9 @@
           {#each shares as share}
             <div class="person-row">
               <div class="person-info">
-                <div class="avatar">{share.actor_id.charAt(0).toUpperCase()}</div>
+                <div class="avatar">
+                  {share.actor_id.charAt(0).toUpperCase()}
+                </div>
                 <span class="person-name">{share.actor_id}</span>
               </div>
               <div class="person-actions">
@@ -117,8 +119,8 @@
                 <button
                   class="remove-icon"
                   title="Remove access"
-                  onclick={() => onremove(share.id)}
-                >&#x2715;</button>
+                  onclick={() => onremove(share.id)}>&#x2715;</button
+                >
               </div>
             </div>
           {/each}
@@ -146,7 +148,9 @@
               <option value="public">Anyone with the link</option>
             </select>
             <span class="access-description">
-              {isPublic ? "Anyone can view this query" : "Only people with access can open"}
+              {isPublic
+                ? "Anyone can view this query"
+                : "Only people with access can open"}
             </span>
           </div>
         </div>

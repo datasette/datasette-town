@@ -1,8 +1,22 @@
 from datasette import hookimpl
 from datasette.permissions import Action, PermissionSQL
-from datasette_vite import vite_entry
+from datasette_vite import vite_entry, vite_js_urls, vite_css_urls
 from sqlite_utils import Database
 import os
+
+try:
+    from datasette_sidebar.hookspecs import SidebarApp
+
+    _has_sidebar = True
+except ImportError:
+    _has_sidebar = False
+
+try:
+    from datasette_user_profiles.hookspecs import ProfileSection
+
+    _has_user_profiles = True
+except ImportError:
+    _has_user_profiles = False
 
 from .internal_migrations import internal_migrations
 from .resources import TownQueryResource
@@ -25,14 +39,14 @@ _ = (pages, api)
 async def startup(datasette):
     def migrate(connection):
         db = Database(connection)
-        internal_migrations.apply(db)
+        internal_migrations.apply(db)  # ty: ignore[unresolved-attribute]
 
     await datasette.get_internal_database().execute_write_fn(migrate)
 
 
 @hookimpl
 def register_routes():
-    return router.routes()
+    return router.routes()  # ty: ignore[unresolved-attribute]
 
 
 @hookimpl
@@ -74,6 +88,62 @@ def register_actions(datasette):
             also_requires=TOWN_EDIT_NAME,
         ),
     ]
+
+
+if _has_sidebar:
+
+    @hookimpl
+    def datasette_sidebar_apps(datasette):
+        databases = [
+            db for db in datasette.databases.values() if db.name != "_internal"
+        ]
+        if len(databases) == 1:
+            href = f"/{databases[0].name}/-/town"
+        else:
+            href = "/-/town"
+        return [
+            SidebarApp(
+                label="Town",
+                description="Write and share SQL queries",
+                href=href,
+                icon='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022M6 8.694 1 10.36V15h5zM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5z"/><path d="M2 11h1v1H2zm2 0h1v1H4zm-2 2h1v1H2zm2 0h1v1H4zm4-4h1v1H8zm2 0h1v1h-1zm-2 2h1v1H8zm2 0h1v1h-1zm2-2h1v1h-1zm0 2h1v1h-1zM8 7h1v1H8zm2 0h1v1h-1zm2 0h1v1h-1zM8 5h1v1H8zm2 0h1v1h-1zm2 0h1v1h-1zm0-2h1v1h-1z"/></svg>',
+                color="#6d28d9",
+            ),
+        ]
+
+
+PROFILE_SECTION_ENTRYPOINT = "src/pages/profile_section/index.ts"
+
+if _has_user_profiles:
+
+    @hookimpl
+    def datasette_user_profile_sections(datasette):
+        vite_dev_path = os.environ.get("DATASETTE_TOWN_VITE_PATH")
+        js_urls = [
+            u["url"]
+            for u in vite_js_urls(
+                datasette,
+                entrypoint=PROFILE_SECTION_ENTRYPOINT,
+                plugin_package="datasette_town",
+                vite_dev_path=vite_dev_path,
+            )
+        ]
+        css_urls = vite_css_urls(
+            datasette,
+            entrypoint=PROFILE_SECTION_ENTRYPOINT,
+            plugin_package="datasette_town",
+            vite_dev_path=vite_dev_path,
+        )
+        return [
+            ProfileSection(
+                id="town-queries",
+                label="Saved Queries",
+                tag_name="profile-town-queries",
+                js_urls=js_urls,
+                css_urls=css_urls,
+                sort_order=60,
+            ),
+        ]
 
 
 @hookimpl

@@ -20,13 +20,53 @@ frontend *flags:
 frontend-dev *flags:
     npm run dev --prefix frontend -- --port 5180 {{flags}}
 
+# Formatting
+format-frontend *flags:
+    npm run format --prefix frontend {{flags}}
+
+format-frontend-check *flags:
+    npm run format:check --prefix frontend {{flags}}
+
+format-backend *flags:
+    uv run ruff format {{flags}}
+
+format-backend-check *flags:
+    uv run ruff format --check {{flags}}
+
+format:
+    just format-backend
+    just format-frontend
+
+format-check:
+    just format-backend-check
+    just format-frontend-check
+
+# Type checking
+check-frontend:
+    npm run check --prefix frontend
+
+check-backend:
+    uvx ty check
+
+check:
+    just check-backend
+    just check-frontend
+
+# Linting
+lint-backend:
+    uv run ruff check
+
+lint:
+    just lint-backend
+    just check-frontend
+
 # Development servers
 dev *flags:
     DATASETTE_SECRET=abc123 \
       uv run \
-        --with datasette-debug-gotham \
         datasette \
         -p 8005 \
+        -s permissions.datasette-sidebar-access.newsroom "daily-planet" \
         -s permissions.datasette-town-access.newsroom "daily-planet" \
         -s permissions.datasette-town-create.newsroom "daily-planet" \
         -s permissions.datasette-town-view.newsroom "daily-planet" \

@@ -38,11 +38,7 @@
   </div>
 
   <div class="search-bar">
-    <input
-      type="text"
-      placeholder="Search queries..."
-      bind:value={search}
-    />
+    <input type="text" placeholder="Search queries..." bind:value={search} />
   </div>
 
   {#if filteredMy.length > 0}
@@ -51,17 +47,28 @@
       <div class="query-grid">
         {#each filteredMy as q}
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
+          <div
+            class="query-card"
+            onclick={(e) => {
+              if (!(e.target as HTMLElement).closest("a"))
+                window.location.href = `/${db}/-/town/q/${q.id}`;
+            }}
+          >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
                 <a class="author" href="/-/profile/{q.actor_id}">
-                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
+                  <img
+                    class="avatar"
+                    src="/-/profile/pic/{q.actor_id}"
+                    alt={q.actor_id}
+                  />
                   <span class="author-name">{q.actor_id}</span>
                 </a>
                 {#if q.is_public}<span class="badge public">Public</span>{/if}
-                <span class="timestamp"><Timestamp value={q.updated_at} /></span>
+                <span class="timestamp"><Timestamp value={q.updated_at} /></span
+                >
               </div>
             </div>
           </div>
@@ -76,17 +83,28 @@
       <div class="query-grid">
         {#each filteredShared as q}
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
+          <div
+            class="query-card"
+            onclick={(e) => {
+              if (!(e.target as HTMLElement).closest("a"))
+                window.location.href = `/${db}/-/town/q/${q.id}`;
+            }}
+          >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
                 <a class="author" href="/-/profile/{q.actor_id}">
-                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
+                  <img
+                    class="avatar"
+                    src="/-/profile/pic/{q.actor_id}"
+                    alt={q.actor_id}
+                  />
                   <span class="author-name">{q.actor_id}</span>
                 </a>
                 {#if q.can_edit}<span class="badge edit">Can edit</span>{/if}
-                <span class="timestamp"><Timestamp value={q.updated_at} /></span>
+                <span class="timestamp"><Timestamp value={q.updated_at} /></span
+                >
               </div>
             </div>
           </div>
@@ -101,16 +119,27 @@
       <div class="query-grid">
         {#each filteredPublic as q}
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="query-card" onclick={(e) => { if (!(e.target as HTMLElement).closest('a')) window.location.href = `/${db}/-/town/q/${q.id}`; }}>
+          <div
+            class="query-card"
+            onclick={(e) => {
+              if (!(e.target as HTMLElement).closest("a"))
+                window.location.href = `/${db}/-/town/q/${q.id}`;
+            }}
+          >
             <pre class="card-sql">{sqlLines(q.sql)}</pre>
             <div class="card-body">
               <div class="card-title">{q.title || "Untitled"}</div>
               <div class="card-footer">
                 <a class="author" href="/-/profile/{q.actor_id}">
-                  <img class="avatar" src="/-/profile/pic/{q.actor_id}" alt={q.actor_id} />
+                  <img
+                    class="avatar"
+                    src="/-/profile/pic/{q.actor_id}"
+                    alt={q.actor_id}
+                  />
                   <span class="author-name">{q.actor_id}</span>
                 </a>
-                <span class="timestamp"><Timestamp value={q.updated_at} /></span>
+                <span class="timestamp"><Timestamp value={q.updated_at} /></span
+                >
               </div>
             </div>
           </div>
@@ -123,7 +152,9 @@
     {#if search.trim()}
       <p class="empty">No queries matching "{search.trim()}".</p>
     {:else}
-      <p class="empty">No queries yet. <a href="/{db}/-/town/new">Create one</a>.</p>
+      <p class="empty">
+        No queries yet. <a href="/{db}/-/town/new">Create one</a>.
+      </p>
     {/if}
   {/if}
 </div>
@@ -200,7 +231,9 @@
     border-radius: 10px;
     color: inherit;
     cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
     overflow: hidden;
   }
   .query-card:hover {
@@ -208,7 +241,8 @@
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
   }
   .card-sql {
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     font-size: 13px;
     color: #4b5563;
     line-height: 1.5;

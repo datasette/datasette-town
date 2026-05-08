@@ -61,6 +61,7 @@ export default defineConfig({
         town_list: "src/pages/town_list/index.ts",
         new_query: "src/pages/new_query/index.ts",
         query_detail: "src/pages/query_detail/index.ts",
+        profile_section: "src/pages/profile_section/index.ts",
       },
     },
   },
