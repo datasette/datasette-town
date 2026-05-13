@@ -76,11 +76,12 @@ dev *flags:
         {{flags}}
 
 dev-with-hmr *flags:
-    DATASETTE_TOWN_VITE_PATH=http://localhost:5180/ \
     watchexec \
       --stop-signal SIGKILL \
       -e py,html \
       --ignore '*.db' \
       --restart \
       --clear -- \
-      just dev {{flags}}
+      just dev \
+        -s plugins.datasette-vite.dev_ports.datasette_town 5180 \
+        {{flags}}

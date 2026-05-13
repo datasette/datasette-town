@@ -2,7 +2,6 @@ from datasette import hookimpl
 from datasette.permissions import Action, PermissionSQL
 from datasette_vite import vite_entry, vite_js_urls, vite_css_urls
 from sqlite_utils import Database
-import os
 
 try:
     from datasette_sidebar.hookspecs import SidebarApp
@@ -54,7 +53,6 @@ def extra_template_vars(datasette):
     entry = vite_entry(
         datasette=datasette,
         plugin_package="datasette_town",
-        vite_dev_path=os.environ.get("DATASETTE_TOWN_VITE_PATH"),
     )
     return {"datasette_town_vite_entry": entry}
 
@@ -118,21 +116,18 @@ if _has_user_profiles:
 
     @hookimpl
     def datasette_user_profile_sections(datasette):
-        vite_dev_path = os.environ.get("DATASETTE_TOWN_VITE_PATH")
         js_urls = [
             u["url"]
             for u in vite_js_urls(
                 datasette,
                 entrypoint=PROFILE_SECTION_ENTRYPOINT,
                 plugin_package="datasette_town",
-                vite_dev_path=vite_dev_path,
             )
         ]
         css_urls = vite_css_urls(
             datasette,
             entrypoint=PROFILE_SECTION_ENTRYPOINT,
             plugin_package="datasette_town",
-            vite_dev_path=vite_dev_path,
         )
         return [
             ProfileSection(
