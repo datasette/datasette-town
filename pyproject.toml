@@ -25,7 +25,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "datasette-debug-gotham",
-    "datasette-sidebar"
+    "datasette-sidebar>=0.0.1a3"
 ]
 
 [build-system]
