@@ -1,6 +1,6 @@
 [project]
 name = "datasette-town"
-version = "0.0.1a3"
+version = "0.0.1a4"
 description = "Share SQL queries"
 readme = "README.md"
 authors = [{name = "Alex Garcia"}]
