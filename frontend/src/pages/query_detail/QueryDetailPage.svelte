@@ -4,7 +4,6 @@
   import { client } from "../../api";
   import SqlEditor from "../../components/SqlEditor.svelte";
   import QueryResults from "../../components/QueryResults.svelte";
-  import ShareDialog from "../../components/ShareDialog.svelte";
   import Timestamp from "../../components/Timestamp.svelte";
   import type { QueryDetailPageData } from "../../page_data/QueryDetailPageData.types";
 
@@ -12,9 +11,11 @@
   const db = appState.selectedDatabase;
 
   let query = $state({ ...pageData.query });
-  let shares = $state([...(pageData.shares ?? [])]);
   let isOwner = pageData.is_owner;
   let canEdit = pageData.can_edit;
+
+  // Seeded so <datasette-acl-share-dialog> can mark the current user's row "(you)".
+  const actorJson = pageData.actor ? JSON.stringify(pageData.actor) : "";
 
   let error: string | null = $state(null);
 
@@ -32,9 +33,6 @@
   let execError: string | null = $state(null);
   let execLoading = $state(false);
   let truncated = $state(false);
-
-  // Share dialog
-  let shareOpen = $state(false);
 
   // Three-dot menu
   let menuOpen = $state(false);
@@ -145,61 +143,6 @@
     }
   }
 
-  async function handleAddShare(actorId: string, canEdit: boolean) {
-    const { data } = await client.POST(
-      "/{database}/-/api/town/queries/{query_id}/shares/add",
-      {
-        params: { path: pathParams },
-        body: { actor_id: actorId, can_edit: canEdit },
-        parseAs: "json",
-      },
-    );
-    if ((data as any)?.ok) {
-      shares = [
-        ...shares,
-        {
-          id: (data as any).id,
-          query_id: query.id,
-          actor_id: actorId,
-          can_edit: canEdit,
-          created_at: new Date().toISOString(),
-        },
-      ];
-    }
-  }
-
-  async function handleRemoveShare(shareId: string) {
-    const { data } = await client.POST(
-      "/{database}/-/api/town/queries/{query_id}/shares/{share_id}/remove",
-      {
-        params: { path: { ...pathParams, share_id: shareId } },
-        parseAs: "json",
-      },
-    );
-    if ((data as any)?.ok) {
-      shares = shares.filter((s) => s.id !== shareId);
-    }
-  }
-
-  async function handleToggleShare(shareId: string, canEdit: boolean) {
-    const { data } = await client.POST(
-      "/{database}/-/api/town/queries/{query_id}/shares/{share_id}/update",
-      {
-        params: { path: { ...pathParams, share_id: shareId } },
-        body: { can_edit: canEdit },
-        parseAs: "json",
-      },
-    );
-    if ((data as any)?.ok) {
-      shares = shares.map((s) =>
-        s.id === shareId ? { ...s, can_edit: canEdit } : s,
-      );
-    }
-  }
-
-  async function handlePublicChange(newIsPublic: boolean) {
-    await patchField({ is_public: newIsPublic });
-  }
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -253,9 +196,19 @@
     {/if}
     <div class="title-actions">
       {#if isOwner}
-        <button class="btn btn-secondary" onclick={() => (shareOpen = true)}
-          >Share</button
-        >
+        <!-- The <datasette-acl-share-dialog> custom element (registered by the
+             datasette-acl-share bundle, loaded on this page via extra_js_urls)
+             ships its own trigger button + modal and talks to the acl JSON API
+             directly. -->
+        <datasette-acl-share-dialog
+          resource-type="town-query"
+          parent={db}
+          child={query.id}
+          resource-label={query.title}
+          actor-json={actorJson}
+          trigger-label="Share"
+          features="people,groups,public"
+        ></datasette-acl-share-dialog>
         <div class="menu-container">
           <button
             class="icon-btn menu-trigger"
@@ -337,7 +290,6 @@
       />
       by {query.actor_id}
     </a>
-    {#if query.is_public}<span class="badge public">Public</span>{/if}
     <span class="timestamp"
       ><Timestamp value={query.updated_at} prefix="Updated " /></span
     >
@@ -400,16 +352,6 @@
     {truncated}
   />
 
-  <ShareDialog
-    {shares}
-    open={shareOpen}
-    isPublic={query.is_public}
-    onclose={() => (shareOpen = false)}
-    onadd={handleAddShare}
-    onremove={handleRemoveShare}
-    ontoggle={handleToggleShare}
-    onpublicchange={handlePublicChange}
-  />
 </div>
 
 <style>
@@ -557,12 +499,6 @@
     height: 20px;
     border-radius: 50%;
     object-fit: cover;
-  }
-  .badge.public {
-    background: #dcfce7;
-    color: #166534;
-    padding: 1px 6px;
-    border-radius: 3px;
   }
   .sql-section {
     margin-bottom: 1rem;

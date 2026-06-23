@@ -1,6 +1,9 @@
+import re
+
 from datasette import hookimpl
-from datasette.permissions import Action, PermissionSQL
+from datasette.permissions import Action
 from datasette_vite import vite_entry, vite_js_urls, vite_css_urls
+from datasette_acl_share import datasette_share_assets
 from sqlite_utils import Database
 
 try:
@@ -19,6 +22,7 @@ except ImportError:
 
 from .internal_migrations import internal_migrations
 from .resources import TownQueryResource
+from .permissions import town_query_roles
 from .router import (
     router,
     TOWN_ACCESS_NAME,
@@ -142,45 +146,34 @@ if _has_user_profiles:
 
 
 @hookimpl
-def permission_resources_sql(datasette, actor, action):
-    actor_id = actor.get("id") if actor else None
+def datasette_acl_roles(datasette):
+    # Per-query view/edit/manage grants are owned by datasette-acl; expose the
+    # Viewer/Editor/Manager roles the share dialog offers.
+    return town_query_roles()
 
-    if action == TOWN_VIEW_NAME:
-        return PermissionSQL(
-            sql="""
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
-                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
-                UNION ALL
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'shared with actor' AS reason
-                FROM datasette_town_queries q JOIN datasette_town_shares s ON s.query_id = q.id
-                WHERE s.actor_id = :actor_id
-                UNION ALL
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'public query' AS reason
-                FROM datasette_town_queries q WHERE q.is_public = 1
-            """,
-            params={"actor_id": actor_id},
-        )
-    elif action == TOWN_EDIT_NAME:
-        return PermissionSQL(
-            sql="""
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
-                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
-                UNION ALL
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'editor share' AS reason
-                FROM datasette_town_queries q JOIN datasette_town_shares s ON s.query_id = q.id
-                WHERE s.actor_id = :actor_id AND s.can_edit = 1
-            """,
-            params={"actor_id": actor_id},
-        )
-    elif action == TOWN_MANAGE_NAME:
-        return PermissionSQL(
-            sql="""
-                SELECT q.database_name AS parent, q.id AS child, 1 AS allow, 'query owner' AS reason
-                FROM datasette_town_queries q WHERE q.actor_id = :actor_id
-            """,
-            params={"actor_id": actor_id},
-        )
-    return None
+
+# The query detail page is the only town page that hosts the
+# <datasette-acl-share-dialog>, so the share bundle is included there (opt-in)
+# rather than site-wide. Matches /{database}/-/town/q/{query_id} exactly.
+_QUERY_PAGE_RE = re.compile(r"^/[^/]+/-/town/q/[^/]+$")
+
+
+def _is_query_page(request) -> bool:
+    return bool(request and _QUERY_PAGE_RE.match(request.path or ""))
+
+
+@hookimpl
+def extra_js_urls(datasette, request):
+    if not _is_query_page(request):
+        return []
+    return datasette_share_assets(datasette)["js"]
+
+
+@hookimpl
+def extra_css_urls(datasette, request):
+    if not _is_query_page(request):
+        return []
+    return datasette_share_assets(datasette)["css"]
 
 
 @hookimpl

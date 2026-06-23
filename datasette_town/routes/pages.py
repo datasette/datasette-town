@@ -7,7 +7,7 @@ from ..page_data import (
     NewQueryPageData,
     QueryDetailPageData,
     QuerySummary,
-    ShareInfo,
+    ActorInfo,
 )
 from ..router import (
     router,
@@ -30,6 +30,16 @@ async def ensure_migrations(datasette):
         internal_migrations.apply(db)
 
     await datasette.get_internal_database().execute_write_fn(migrate)
+
+
+def _actor_info(request) -> ActorInfo | None:
+    actor = request.actor
+    if not actor or not actor.get("id"):
+        return None
+    return ActorInfo(
+        id=actor["id"],
+        name=actor.get("name") or actor.get("display") or actor.get("username"),
+    )
 
 
 async def render_page(
@@ -55,24 +65,26 @@ async def town_list_page(datasette, request, database: str):
     idb = InternalDB(datasette.get_internal_database())
 
     actor_id = request.actor.get("id") if request.actor else None
+
+    # datasette-acl decides which queries this actor may view (owner grant,
+    # shares with them, group grants, and public/everyone grants all flow
+    # through here). Filter to the current database via the parent.
+    page = await datasette.allowed_resources(
+        action=TOWN_VIEW_NAME,
+        actor=request.actor,
+        parent=database,
+        limit=1000,
+    )
+    viewable_ids = [r.child for r in page.resources if r.child is not None]
+
+    rows = await idb.get_queries_by_ids(viewable_ids)
+
     my_queries = []
     shared_queries = []
-
-    if actor_id:
-        my_raw = await idb.list_queries_for_actor(database, actor_id)
-        my_queries = [QuerySummary(**q, can_edit=True) for q in my_raw]
-
-        shared_raw = await idb.list_shared_queries_for_actor(database, actor_id)
-        shared_queries = [
-            QuerySummary(
-                **{k: v for k, v in q.items() if k != "can_edit"},
-                can_edit=q.get("can_edit", False),
-            )
-            for q in shared_raw
-        ]
-
-    public_raw = await idb.list_public_queries(database)
-    public_queries = [QuerySummary(**q) for q in public_raw]
+    for row in rows:
+        is_mine = actor_id is not None and row["actor_id"] == actor_id
+        summary = QuerySummary(**row, can_edit=is_mine)
+        (my_queries if is_mine else shared_queries).append(summary)
 
     return await render_page(
         datasette,
@@ -83,7 +95,6 @@ async def town_list_page(datasette, request, database: str):
             database_name=database,
             my_queries=my_queries,
             shared_queries=shared_queries,
-            public_queries=public_queries,
         ),
     )
 
@@ -110,7 +121,7 @@ async def query_detail_page(datasette, request, database: str, query_id: str):
     if query is None:
         return Response.text("Query not found", status=404)
 
-    resource = TownQueryResource(database=database, query_id=query_id)
+    resource = TownQueryResource(database, query_id)
 
     can_view = await datasette.allowed(
         action=TOWN_VIEW_NAME, resource=resource, actor=request.actor
@@ -121,14 +132,10 @@ async def query_detail_page(datasette, request, database: str, query_id: str):
     can_edit = await datasette.allowed(
         action=TOWN_EDIT_NAME, resource=resource, actor=request.actor
     )
+    # "Owner" == can manage sharing (acl Manager role).
     is_owner = await datasette.allowed(
         action=TOWN_MANAGE_NAME, resource=resource, actor=request.actor
     )
-
-    shares = []
-    if is_owner:
-        shares_raw = await idb.list_shares(query_id)
-        shares = [ShareInfo(**s) for s in shares_raw]
 
     return await render_page(
         datasette,
@@ -138,8 +145,8 @@ async def query_detail_page(datasette, request, database: str, query_id: str):
         page_data=QueryDetailPageData(
             database_name=database,
             query=QuerySummary(**query, can_edit=can_edit),
-            shares=shares,
             is_owner=is_owner,
             can_edit=can_edit,
+            actor=_actor_info(request),
         ),
     )

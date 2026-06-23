@@ -69,9 +69,6 @@ dev *flags:
         -s permissions.datasette-sidebar-access.newsroom "daily-planet" \
         -s permissions.datasette-town-access.newsroom "daily-planet" \
         -s permissions.datasette-town-create.newsroom "daily-planet" \
-        -s permissions.datasette-town-view.newsroom "daily-planet" \
-        -s permissions.datasette-town-edit.newsroom "daily-planet" \
-        -s permissions.datasette-town-manage.newsroom "daily-planet" \
         -s permissions.profile_access.id "*" \
         {{flags}}
 
