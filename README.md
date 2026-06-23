@@ -7,6 +7,31 @@
 
 Experimental plugin for sharing SQL queries
 
+## Screenshots
+
+Browse and search the queries you own and ones shared with you:
+
+![The Town query list, with "My Queries" and "Shared with Me" sections](docs/screenshots/town-list.png)
+
+Open a query to view its SQL, run it, and (if you own it) share it:
+
+![A query detail page](docs/screenshots/query-detail.png)
+
+![Query results rendered as a table](docs/screenshots/query-results.png)
+
+Sharing is handled by [datasette-acl](https://github.com/datasette/datasette-acl)
+via the `<datasette-acl-share-dialog>` component — share with people, groups, or
+the public:
+
+![The share dialog, showing people with access and general access](docs/screenshots/share-dialog.png)
+
+Write a new query with a live SQL editor:
+
+![The new query form](docs/screenshots/new-query.png)
+
+The committed screenshots are regenerated with `just shots` (see the `shots`
+recipe in the [Justfile](Justfile)).
+
 ## Permissions and sharing
 
 Access to individual queries is managed by
