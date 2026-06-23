@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "shots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

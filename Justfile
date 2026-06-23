@@ -1,3 +1,15 @@
+# Regenerate the committed doc screenshots in docs/screenshots/. Self-contained:
+# the script boots a throwaway datasette, lets the shot-plugin seed demo queries
+# + acl grants (alice owns several; bob shares one to alice; the headline query
+# is shared to bob/carol/public), drives Playwright, then tears it down. Builds
+# the frontend first so shots reflect the current UI.
+# Pass shot names to regenerate a subset, e.g. `just shots town-list share-dialog`.
+shots *names:
+    just frontend
+    npm install
+    npx playwright install chromium
+    node scripts/screenshots.mjs {{names}}
+
 # Type generation
 types-routes:
   uv run python -c 'from datasette_town.router import router; import json; print(json.dumps(router.openapi_document_json()))' \
