@@ -9,7 +9,6 @@
 
   let myQueries = $state([...(pageData.my_queries ?? [])]);
   let sharedQueries = $state([...(pageData.shared_queries ?? [])]);
-  let publicQueries = $state([...(pageData.public_queries ?? [])]);
 
   let search = $state("");
 
@@ -24,7 +23,6 @@
 
   let filteredMy = $derived(myQueries.filter(matches));
   let filteredShared = $derived(sharedQueries.filter(matches));
-  let filteredPublic = $derived(publicQueries.filter(matches));
 
   function sqlLines(sql: string): string {
     return sql.trim();
@@ -75,7 +73,6 @@
                   />
                   <span class="author-name">{q.actor_id}</span>
                 </a>
-                {#if q.is_public}<span class="badge public">Public</span>{/if}
                 <span class="timestamp"><Timestamp value={q.updated_at} /></span
                 >
               </div>
@@ -121,41 +118,7 @@
     </section>
   {/if}
 
-  {#if filteredPublic.length > 0}
-    <section>
-      <h3>Public Queries</h3>
-      <div class="query-grid">
-        {#each filteredPublic as q}
-          <div
-            class="query-card"
-            role="button"
-            tabindex="0"
-            onclick={(e) => openCard(e, q.id)}
-            onkeydown={(e) => openCard(e, q.id)}
-          >
-            <pre class="card-sql">{sqlLines(q.sql)}</pre>
-            <div class="card-body">
-              <div class="card-title">{q.title || "Untitled"}</div>
-              <div class="card-footer">
-                <a class="author" href="/-/profile/{q.actor_id}">
-                  <img
-                    class="avatar"
-                    src="/-/profile/pic/{q.actor_id}"
-                    alt={q.actor_id}
-                  />
-                  <span class="author-name">{q.actor_id}</span>
-                </a>
-                <span class="timestamp"><Timestamp value={q.updated_at} /></span
-                >
-              </div>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </section>
-  {/if}
-
-  {#if filteredMy.length === 0 && filteredShared.length === 0 && filteredPublic.length === 0}
+  {#if filteredMy.length === 0 && filteredShared.length === 0}
     {#if search.trim()}
       <p class="empty">No queries matching "{search.trim()}".</p>
     {:else}
@@ -308,10 +271,6 @@
     border-radius: 3px;
     font-size: 12px;
     font-weight: 500;
-  }
-  .badge.public {
-    background: #dcfce7;
-    color: #166534;
   }
   .badge.edit {
     background: #fef3c7;

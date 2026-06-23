@@ -9,7 +9,6 @@
   let title = $state("");
   let description = $state("");
   let sqlValue = $state("");
-  let isPublic = $state(false);
   let saving = $state(false);
   let error: string | null = $state(null);
 
@@ -26,7 +25,7 @@
     try {
       const { data } = await client.POST("/{database}/-/api/town/queries/new", {
         params: { path: { database: db } },
-        body: { title, description, sql: sqlValue, is_public: isPublic },
+        body: { title, description, sql: sqlValue },
         parseAs: "json",
       });
       const d = data as any;
@@ -107,13 +106,6 @@
       <SqlEditor bind:value={sqlValue} onexecute={handleExecutePreview} />
     </div>
 
-    <div class="field-row">
-      <label class="checkbox-label">
-        <input type="checkbox" bind:checked={isPublic} />
-        Public
-      </label>
-    </div>
-
     <div class="actions">
       <button
         class="btn btn-secondary"
@@ -175,16 +167,6 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
-  }
-  .field-row {
-    display: flex;
-    align-items: center;
-  }
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
   }
   .actions {
     display: flex;

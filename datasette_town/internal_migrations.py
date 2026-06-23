@@ -6,6 +6,10 @@ internal_migrations = Migrations("datasette-town.internal")
 
 @internal_migrations()
 def m001_initial(db: Database):
+    # Per-query access (view / edit / manage, including public access and
+    # sharing with people and groups) is owned by datasette-acl. The creator is
+    # recorded in actor_id and seeded a Manager grant on create. There is no
+    # shares table or is_public column — both are acl grants now.
     db.executescript(
         """
         CREATE TABLE datasette_town_queries(
@@ -15,18 +19,8 @@ def m001_initial(db: Database):
             title TEXT NOT NULL DEFAULT '',
             description TEXT NOT NULL DEFAULT '',
             sql TEXT NOT NULL DEFAULT '',
-            is_public INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f', 'now')),
             updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f', 'now'))
-        );
-
-        CREATE TABLE datasette_town_shares(
-            id TEXT PRIMARY KEY,
-            query_id TEXT NOT NULL REFERENCES datasette_town_queries(id) ON DELETE CASCADE,
-            actor_id TEXT NOT NULL,
-            can_edit INTEGER NOT NULL DEFAULT 0,
-            created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f', 'now')),
-            UNIQUE(query_id, actor_id)
         );
         """
     )

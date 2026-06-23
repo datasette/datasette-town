@@ -14,7 +14,6 @@
     database_name: string;
     title: string;
     description: string;
-    is_public: number;
     updated_at: string;
     updated_duration_seconds: number;
   }
@@ -64,9 +63,6 @@
         {/if}
         <div class="query-meta">
           {timeAgo(q.updated_duration_seconds)}
-          {#if q.is_public}
-            <span class="public-badge">public</span>
-          {/if}
         </div>
       </div>
     {/each}
@@ -107,8 +103,5 @@
     font-size: 0.8rem;
     color: #999;
     margin-top: 2px;
-  }
-  .public-badge {
-    color: #16a34a;
   }
 </style>

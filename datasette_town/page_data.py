@@ -8,18 +8,15 @@ class QuerySummary(BaseModel):
     title: str
     description: str
     sql: str
-    is_public: bool
     created_at: str
     updated_at: str
     can_edit: bool = False
 
 
-class ShareInfo(BaseModel):
+# Minimal actor info seeded for the <datasette-acl-share-dialog> ("(you)" row).
+class ActorInfo(BaseModel):
     id: str
-    query_id: str
-    actor_id: str
-    can_edit: bool
-    created_at: str
+    name: str | None = None
 
 
 # /{db}/-/town — list page
@@ -27,7 +24,6 @@ class TownListPageData(BaseModel):
     database_name: str
     my_queries: list[QuerySummary] = []
     shared_queries: list[QuerySummary] = []
-    public_queries: list[QuerySummary] = []
 
 
 # /{db}/-/town/new — new query form
@@ -39,9 +35,9 @@ class NewQueryPageData(BaseModel):
 class QueryDetailPageData(BaseModel):
     database_name: str
     query: QuerySummary
-    shares: list[ShareInfo] = []
     is_owner: bool = False
     can_edit: bool = False
+    actor: ActorInfo | None = None
 
 
 # API request/response models
@@ -49,30 +45,18 @@ class CreateQueryRequest(BaseModel):
     title: str = ""
     description: str = ""
     sql: str = ""
-    is_public: bool = False
 
 
 class UpdateQueryRequest(BaseModel):
     title: str = ""
     description: str = ""
     sql: str = ""
-    is_public: bool = False
 
 
 class PatchQueryRequest(BaseModel):
     title: str | None = None
     description: str | None = None
     sql: str | None = None
-    is_public: bool | None = None
-
-
-class AddShareRequest(BaseModel):
-    actor_id: str
-    can_edit: bool = False
-
-
-class UpdateShareRequest(BaseModel):
-    can_edit: bool
 
 
 class ExecuteQueryResponse(BaseModel):
